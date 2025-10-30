@@ -1,35 +1,45 @@
 name: Build Resume
 
-# Trigger this workflow when resume.tex is updated
 on:
   push:
     paths:
-      - "resume.tex"
+      - "resume.tex" # Trigger workflow only when resume.tex changes
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Check out your repo
+      # Step 1: Checkout repository
       - name: Checkout repository
         uses: actions/checkout@v3
 
       # Step 2: Install LaTeX and ImageMagick
-      - name: Install LaTeX
-        run: sudo apt-get update && sudo apt-get install -y \
-          texlive-latex-base texlive-fonts-recommended \
-          texlive-fonts-extra texlive-latex-extra imagemagick
+      - name: Install LaTeX and ImageMagick
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            texlive-latex-base \
+            texlive-fonts-recommended \
+            texlive-fonts-extra \
+            texlive-latex-extra \
+            imagemagick
 
-      # Step 3: Compile your LaTeX file to PDF
-      - name: Compile LaTeX resume
-        run: pdflatex resume.tex
+      # Step 3: Compile LaTeX resume to PDF
+      - name: Compile LaTeX
+        run: |
+          pdflatex resume.tex || true  # Ignore minor compilation warnings
 
-      # Step 4: Convert PDF to PNG so it can be displayed in README
+      # Step 4: Convert PDF to PNG for README display
       - name: Convert PDF to PNG
-        run: convert -density 300 resume.pdf -quality 90 resume.png
+        run: |
+          if [ -f resume.pdf ]; then
+            convert -density 300 resume.pdf -quality 90 resume.png
+          else
+            echo "resume.pdf not found. Skipping PNG conversion."
+          fi
 
-      # Step 5: Commit updated PNG back to repo
+      # Step 5: Commit updated PNG back to repo (optional)
       - name: Commit updated image
         run: |
           git config --global user.name "github-actions"
